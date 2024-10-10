@@ -1,0 +1,243 @@
+package com.afr.fms.Branch_Audit.Report.Mapper;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.jdbc.SQL;
+
+public class ReportSqlProvider {
+
+	public String getBranchAuditReport(@Param("region_id") Long region_id, @Param("branch_id") Long branch_id,
+			@Param("finding_status") String finding_status,
+			@Param("rectification_date_range") String[] rectification_date_range,
+			@Param("date_range") String[] date_range, @Param("audit_finding") String audit_finding,
+			@Param("category_of_discrepancy") String category_of_discrepancy,
+			@Param("card_distributed_to_customer") Double card_distributed_to_customer,
+			@Param("card_issued_branch") Double card_issued_branch,
+			@Param("rectification_status") String rectification_status,
+			@Param("single_filter_info") String single_filter_info, @Param("user_id") Long user_id,
+			@Param("user_roles") String[] user_roles, @Param("user_branch_id") Long user_branch_id,
+			@Param("user_region_id") Long user_region_id) {
+
+//		System.out.println("region_id: " + region_id);
+//		System.out.println("branch_id: " + branch_id);
+//		System.out.println("finding_status: " + finding_status);
+//		System.out.println("rectification_date_range0: " + rectification_date_range[0]);
+//		System.out.println("rectification_date_range1: " + rectification_date_range[1]);
+//		System.out.println("date_range: " + date_range[0]);
+//		System.out.println("date_range: " + date_range[1]);
+//		System.out.println("audit_finding: " + audit_finding);
+//		System.out.println("category_of_discrepancy: " + category_of_discrepancy);
+//		System.out.println("amount_min: " + amount_min);
+//		System.out.println("amount_max: " + amount_max);
+//		System.out.println("rectification_status: " + rectification_status);
+
+		SQL sql = new SQL();
+
+		if (single_filter_info.equalsIgnoreCase("branch")) {
+			sql.SELECT("	bfa.id, " + "	bfa.case_number, " + "	b.name as branch_name, "
+					+ "	dbo._StripHTML(bfa.finding) as audit_finding, " + "	acb.issued_card as card_issued_branch, "
+					+ "	acb.distributed_card as card_distributed_to_customer, "
+					+ "	acb.returned_card as return_to_card_issuance_unit, "
+					+ "	acb.remaining_card as remaining_card_at_branch, "
+					+ "	dbo._StripHTML(bfa.impact) as audit_impact, "
+					+ "	dbo._StripHTML(bfa.recommendation) as auditor_recommendation, "
+					+ "	bfa.action_plan as auditee_response, " + "	bfa.finding_status as audit_finding_status, "
+					+ "	cast(bfa.rectification_date as date) as rectified_on")
+					.FROM("branch_financial_audit bfa, branch b, ATM_card_branch acb").WHERE("1 = 1");
+			sql.AND().WHERE("bfa.branch_id = b.id and bfa.id = acb.branch_audit_id");
+			if (branch_id != null)
+				sql.AND().WHERE("b.id = #{branch_id}");
+		} else if (single_filter_info.equalsIgnoreCase("region")) {
+			sql.SELECT("	bfa.id, " + "	r.name as region_name, "
+					+ "	dbo._StripHTML(bfa.finding) as audit_finding, " + "	acb.issued_card as card_issued_branch, "
+					+ "	acb.distributed_card as card_distributed_to_customer, "
+					+ "	acb.returned_card as return_to_card_issuance_unit, "
+					+ "	acb.remaining_card as remaining_card_at_branch, "
+					+ "	dbo._StripHTML(bfa.impact) as audit_impact, "
+					+ "	dbo._StripHTML(bfa.recommendation) as auditor_recommendation, "
+					+ "	bfa.action_plan as auditee_response, " + "	bfa.finding_status as audit_finding_status, "
+					+ "	cast(bfa.rectification_date as date) as rectified_on")
+					.FROM("branch_financial_audit bfa, branch b, region r, ATM_card_branch acb").WHERE("1 = 1");
+			sql.AND().WHERE("bfa.branch_id = b.id and b.region_id = r.id and bfa.id = acb.branch_audit_id");
+			if (region_id != null)
+				sql.AND().WHERE("b.region_id = #{region_id}");
+		} else if (single_filter_info.equalsIgnoreCase("finding_status")) {
+			sql.SELECT("	bfa.id, " + " " + "	b.name as branch_name, "
+					+ "	dbo._StripHTML(bfa.finding) as audit_finding, " + "	acb.issued_card as card_issued_branch, "
+					+ "	acb.distributed_card as card_distributed_to_customer, "
+					+ "	acb.returned_card as return_to_card_issuance_unit, "
+					+ "	acb.remaining_card as remaining_card_at_branch, "
+					+ "	dbo._StripHTML(bfa.impact) as audit_impact, "
+					+ "	dbo._StripHTML(bfa.recommendation) as auditor_recommendation, "
+					+ "	bfa.action_plan as auditee_response, " + "	bfa.finding_status as audit_finding_status, "
+					+ "	cast(bfa.rectification_date as date) as rectified_on")
+					.FROM("branch_financial_audit bfa, branch b, ATM_card_branch acb").WHERE("1 = 1");
+			sql.AND().WHERE("bfa.branch_id = b.id and bfa.id = acb.branch_audit_id");
+			if (finding_status != null)
+				sql.AND().WHERE("bfa.finding_status = #{finding_status}");
+		} else if (single_filter_info.equalsIgnoreCase("rectification_date_range")) {
+			sql.SELECT("	bfa.id, " + " " + "	b.name as branch_name, "
+					+ "	dbo._StripHTML(bfa.finding) as audit_finding, " + "	acb.issued_card as card_issued_branch, "
+					+ "	acb.distributed_card as card_distributed_to_customer, "
+					+ "	acb.returned_card as return_to_card_issuance_unit, "
+					+ "	acb.remaining_card as remaining_card_at_branch, "
+					+ "	dbo._StripHTML(bfa.impact) as audit_impact, "
+					+ "	dbo._StripHTML(bfa.recommendation) as auditor_recommendation, "
+					+ "	bfa.action_plan as auditee_response, " + "	bfa.finding_status as audit_finding_status, "
+					+ "	cast(bfa.rectification_date as date) as rectified_on")
+					.FROM("branch_financial_audit bfa, branch b, ATM_card_branch acb").WHERE("1 = 1");
+			sql.AND().WHERE("bfa.branch_id = b.id and bfa.id = acb.branch_audit_id");
+			if (!rectification_date_range[0].equalsIgnoreCase("none42e")
+					&& !rectification_date_range[1].equalsIgnoreCase("none42e")) {
+				sql.AND()
+						.WHERE("cast(bfa.rectification_date as date) >= '"
+								+ LocalDateTime.ofInstant(Instant.parse(rectification_date_range[0]), ZoneId.of("UTC"))
+										.plusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+								+ "'");
+				sql.AND()
+						.WHERE("cast(bfa.rectification_date as date) <= '"
+								+ LocalDateTime.ofInstant(Instant.parse(rectification_date_range[1]), ZoneId.of("UTC"))
+										.plusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+								+ "'");
+			} else if (!rectification_date_range[0].equalsIgnoreCase("none42e")
+					&& rectification_date_range[1].equalsIgnoreCase("none42e"))
+				sql.AND()
+						.WHERE("cast(bfa.rectification_date as date) = '"
+								+ LocalDateTime.ofInstant(Instant.parse(rectification_date_range[0]), ZoneId.of("UTC"))
+										.plusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+								+ "'");
+		} else if (single_filter_info.equalsIgnoreCase("audit_finding")) {
+			sql.SELECT("bfa.id, " + "	b.name as branch_name, " + "	dbo._StripHTML(bfa.finding) as audit_finding, "
+					+ "	acb.issued_card as card_issued_branch, "
+					+ "	acb.distributed_card as card_distributed_to_customer, "
+					+ "	acb.returned_card as return_to_card_issuance_unit, "
+					+ "	acb.remaining_card as remaining_card_at_branch, "
+					+ "	dbo._StripHTML(bfa.impact) as audit_impact, "
+					+ "	dbo._StripHTML(bfa.recommendation) as auditor_recommendation, "
+					+ "	bfa.action_plan as auditee_response, " + "	bfa.finding_status as audit_finding_status, "
+					+ "	cast(bfa.rectification_date as date) as rectified_on")
+					.FROM("branch_financial_audit bfa, branch b, ATM_card_branch acb").WHERE("1 = 1");
+			sql.AND().WHERE("bfa.branch_id = b.id and bfa.id = acb.branch_audit_id");
+			if (audit_finding != null)
+				sql.AND().WHERE("dbo._StripHTML(bfa.finding) LIKE '%' + #{audit_finding} + '%'");
+		} else if (single_filter_info.equalsIgnoreCase("date_range")) {
+			sql.SELECT("bfa.id, " + "	cast(bfa.finding_date as date) as audit_report_date, "
+					+ "	b.name as branch_name, " + "	dbo._StripHTML(bfa.finding) as audit_finding, "
+					+ "	acb.issued_card as card_issued_branch, "
+					+ "	acb.distributed_card as card_distributed_to_customer, "
+					+ "	acb.returned_card as return_to_card_issuance_unit, "
+					+ "	acb.remaining_card as remaining_card_at_branch, "
+					+ "	dbo._StripHTML(bfa.impact) as audit_impact, "
+					+ "	dbo._StripHTML(bfa.recommendation) as auditor_recommendation, "
+					+ "	bfa.action_plan as auditee_response, " + "	bfa.finding_status as audit_finding_status, "
+					+ "	cast(bfa.rectification_date as date) as rectified_on")
+					.FROM("branch_financial_audit bfa, branch b, ATM_card_branch acb").WHERE("1 = 1");
+			sql.AND().WHERE("bfa.branch_id = b.id and bfa.id = acb.branch_audit_id");
+			if (!date_range[0].equalsIgnoreCase("none42e") && !date_range[1].equalsIgnoreCase("none42e")) {
+				sql.AND()
+						.WHERE("cast(bfa.finding_date as date) >= '"
+								+ LocalDateTime.ofInstant(Instant.parse(date_range[0]), ZoneId.of("UTC")).plusDays(1)
+										.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+								+ "'");
+				sql.AND()
+						.WHERE("cast(bfa.finding_date as date) <= '"
+								+ LocalDateTime.ofInstant(Instant.parse(date_range[1]), ZoneId.of("UTC")).plusDays(1)
+										.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+								+ "'");
+			} else if (!date_range[0].equalsIgnoreCase("none42e") && date_range[1].equalsIgnoreCase("none42e"))
+				sql.AND()
+						.WHERE("cast(bfa.finding_date as date) = '"
+								+ LocalDateTime.ofInstant(Instant.parse(date_range[0]), ZoneId.of("UTC")).plusDays(1)
+										.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+								+ "'");
+		} else {
+			sql.SELECT("bfa.id, " + "	b.name as branch_name, " + "	dbo._StripHTML(bfa.finding) as audit_finding, "
+					+ "	acb.issued_card as card_issued_branch, "
+					+ "	acb.distributed_card as card_distributed_to_customer, "
+					+ "	acb.returned_card as return_to_card_issuance_unit, "
+					+ "	acb.remaining_card as remaining_card_at_branch, "
+					+ "	dbo._StripHTML(bfa.impact) as audit_impact, "
+					+ "	dbo._StripHTML(bfa.recommendation) as auditor_recommendation, "
+					+ "	bfa.action_plan as auditee_response, " + "	bfa.case_number, "
+					+ "	bfa.finding_status as audit_finding_status, " + "	cast (bfa.rectification_date as date) as rectified_on, "
+					+ "	cast (bfa.finding_date as date) as audit_report_date")
+					.FROM("branch_financial_audit bfa, branch b, ATM_card_branch acb").WHERE("1 = 1");
+			sql.AND().WHERE("bfa.branch_id = b.id and bfa.id = acb.branch_audit_id");
+
+			if (region_id != null)
+				sql.AND().WHERE("b.region_id = #{region_id}");
+			if (branch_id != null)
+				sql.AND().WHERE("b.id = #{branch_id}");
+			if (finding_status != null)
+				sql.AND().WHERE("bfa.finding_status = #{finding_status}");
+			if (!rectification_date_range[0].equalsIgnoreCase("none42e")
+					&& !rectification_date_range[1].equalsIgnoreCase("none42e")) {
+				sql.AND()
+						.WHERE("cast(bfa.rectification_date as date) >= '"
+								+ LocalDateTime.ofInstant(Instant.parse(rectification_date_range[0]), ZoneId.of("UTC"))
+										.plusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+								+ "'");
+				sql.AND()
+						.WHERE("cast(bfa.rectification_date as date) <= '"
+								+ LocalDateTime.ofInstant(Instant.parse(rectification_date_range[1]), ZoneId.of("UTC"))
+										.plusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+								+ "'");
+			} else if (!rectification_date_range[0].equalsIgnoreCase("none42e")
+					&& rectification_date_range[1].equalsIgnoreCase("none42e"))
+				sql.AND()
+						.WHERE("cast(bfa.rectification_date as date) = '"
+								+ LocalDateTime.ofInstant(Instant.parse(rectification_date_range[0]), ZoneId.of("UTC"))
+										.plusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+								+ "'");
+			if (audit_finding != null)
+				sql.AND().WHERE("dbo._StripHTML(bfa.finding) LIKE '%' + #{audit_finding} + '%'");
+			if (!date_range[0].equalsIgnoreCase("none42e") && !date_range[1].equalsIgnoreCase("none42e")) {
+				sql.AND()
+						.WHERE("cast(bfa.finding_date as date) >= '"
+								+ LocalDateTime.ofInstant(Instant.parse(date_range[0]), ZoneId.of("UTC")).plusDays(1)
+										.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+								+ "'");
+				sql.AND()
+						.WHERE("cast(bfa.finding_date as date) <= '"
+								+ LocalDateTime.ofInstant(Instant.parse(date_range[1]), ZoneId.of("UTC")).plusDays(1)
+										.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+								+ "'");
+			} else if (!date_range[0].equalsIgnoreCase("none42e") && date_range[1].equalsIgnoreCase("none42e"))
+				sql.AND()
+						.WHERE("cast(bfa.finding_date as date) = '"
+								+ LocalDateTime.ofInstant(Instant.parse(date_range[0]), ZoneId.of("UTC")).plusDays(1)
+										.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+								+ "'");
+			if (rectification_status != null)
+				sql.AND().WHERE(
+						"bfa.rectification_status = '" + (rectification_status.equalsIgnoreCase("unrectified") ? 2
+								: rectification_status.equalsIgnoreCase("partially") ? 3 : 1) + "'");
+			if (card_issued_branch != null)
+				sql.AND().WHERE("acb.issued_card = #{card_issued_branch}");
+			if (card_distributed_to_customer != null)
+				sql.AND().WHERE("acb.distributed_card = #{card_distributed_to_customer}");
+		}
+		if (Arrays.asList(user_roles).contains("ROLE_AUDITOR_BFA"))
+			sql.AND().WHERE("bfa.auditor_id = #{user_id}");
+		if (Arrays.asList(user_roles).contains("ROLE_REVIEWER_BFA"))
+			sql.AND().WHERE("b.region_id = #{user_region_id}");
+
+		return sql.toString();
+
+	}
+	
+	/*
+	 *  'ROLE_AUDITOR_BFA',
+        'ROLE_APPROVER_BFA',
+        'ROLE_REVIEWER_BFA',
+        'ROLE_COMPILER_BFA',
+        'ROLE_BRANCHM_BFA',
+        'ROLE_REGIONALD_BFA',
+	 */
+}
